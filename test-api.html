@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .endpoint { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>API Endpoint Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:52773/api/movies';
+        const endpoints = [
+            { path: '/test', name: 'Test Endpoint' },
+            { path: '/stats', name: 'Stats Endpoint' },
+            { path: '', name: 'Movies List' },
+            { path: '/search/avatar', name: 'Search Movies' }
+        ];
+        
+        async function testEndpoint(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint.path}`);
+                const data = await response.text();
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 'ERROR',
+                    data: error.message
+                };
+            }
+        }
+        
+        async function testAllEndpoints() {
+            const resultsDiv = document.getElementById('results');
+            
+            for (let endpoint of endpoints) {
+                const result = await testEndpoint(endpoint);
+                const div = document.createElement('div');
+                div.className = `endpoint ${result.success ? 'success' : 'error'}`;
+                div.innerHTML = `
+                    <h3>${endpoint.name}</h3>
+                    <p><strong>URL:</strong> ${API_BASE}${endpoint.path}</p>
+                    <p><strong>Status:</strong> ${result.status}</p>
+                    <p><strong>Response:</strong> <pre>${result.data}</pre></p>
+                `;
+                resultsDiv.appendChild(div);
+            }
+        }
+        
+        // Test endpoints when page loads
+        testAllEndpoints();
+    </script>
+</body>
+</html>

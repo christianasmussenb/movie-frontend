@@ -1,0 +1,17 @@
+{
+  "name": "movie-database-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para Movie Database con IRIS API",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "build": "echo 'Build completed'",
+    "dev": "python -m http.server 3000"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "keywords": ["movies", "iris", "tmdb", "frontend"],
+  "author": "Tu Nombre",
+  "license": "MIT"
+}

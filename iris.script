@@ -1,0 +1,19 @@
+set $namespace="USER"
+
+// Compilar todas las clases
+do $system.OBJ.CompileAll("fck")
+
+// Configurar la aplicación web para la API
+do ##class(Security.Applications).Create("/api/movies","dc.Demo.MovieAPI","","/api/movies/",1,32,0,0,0,0,0,0,0,0,0)
+
+// Configurar CORS para permitir acceso desde cualquier origen
+set prop("AutheEnabled") = 32
+set prop("NameSpace") = "USER"
+set prop("Path") = "/api/movies/"
+set prop("DispatchClass") = "dc.Demo.MovieAPI"
+set prop("MatchRoles") = ":%All"
+do ##class(Security.Applications).Modify("/api/movies", .prop)
+
+write "Aplicación configurada exitosamente",!
+
+halt

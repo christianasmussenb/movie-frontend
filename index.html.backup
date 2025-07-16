@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Database</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+            color: #eee; 
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            background: rgba(22, 33, 62, 0.8); 
+            padding: 30px; 
+            border-radius: 15px; 
+            backdrop-filter: blur(10px);
+        }
+        .header h1 { 
+            font-size: 3em; 
+            background: linear-gradient(45deg, #e94560, #0f3460); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin-bottom: 10px;
+        }
+        .search-box { 
+            margin: 30px 0; 
+            text-align: center; 
+            background: rgba(22, 33, 62, 0.9); 
+            padding: 25px; 
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(233, 69, 96, 0.1);
+        }
+        .search-box input { 
+            padding: 12px 20px; 
+            width: 350px; 
+            border: 2px solid #e94560; 
+            border-radius: 25px; 
+            margin-right: 15px; 
+            background: rgba(15, 52, 96, 0.8); 
+            color: white;
+            font-size: 16px;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #0f3460;
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+        }
+        .search-box button { 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 25px; 
+            background: linear-gradient(45deg, #e94560, #ff6b8a); 
+            color: white; 
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        .search-box button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.4);
+        }
+        .stats { 
+            display: flex; 
+            justify-content: space-around; 
+            margin: 30px 0; 
+            background: rgba(22, 33, 62, 0.9); 
+            padding: 25px; 
+            border-radius: 15px;
+        }
+        .stat-item { 
+            text-align: center; 
+            padding: 20px;
+        }
+        .stat-number { 
+            font-size: 2.5em; 
+            color: #e94560; 
+            font-weight: bold; 
+            text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+        }
+        .stat-label { 
+            font-size: 1.1em; 
+            color: #bbb; 
+            margin-top: 5px;
+        }
+        .movies-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px; 
+            margin-top: 30px; 
+        }
+        .movie-card { 
+            background: rgba(22, 33, 62, 0.9); 
+            border-radius: 15px; 
+            overflow: hidden; 
+            transition: all 0.3s ease; 
+            position: relative; 
+            min-height: 450px;
+            border: 1px solid rgba(233, 69, 96, 0.2);
+        }
+        .movie-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 15px 40px rgba(233, 69, 96, 0.3);
+            border-color: #e94560;
+        }
+        .movie-poster { 
+            width: 100%; 
+            height: 250px; 
+            object-fit: cover; 
+            background: linear-gradient(45deg, #0f3460, #1a1a2e); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .no-poster { 
+            color: #666; 
+            font-size: 16px;
+            text-align: center;
+        }
+        .movie-info { 
+            padding: 20px; 
+        }
+        .movie-title { 
+            font-size: 1.3em; 
+            font-weight: bold; 
+            margin-bottom: 12px; 
+            color: #e94560;
+            line-height: 1.3;
+        }
+        .movie-details { 
+            font-size: 0.95em; 
+            color: #bbb; 
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .movie-rating { 
+            background: linear-gradient(45deg, #e94560, #ff6b8a); 
+            color: white; 
+            padding: 5px 12px; 
+            border-radius: 15px; 
+            font-size: 0.9em; 
+            display: inline-block;
+            font-weight: bold;
+        }
+        .loading { 
+            text-align: center; 
+            color: #e94560; 
+            font-size: 1.5em; 
+            margin: 50px 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .error { 
+            background: linear-gradient(45deg, #d32f2f, #f44336); 
+            color: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin: 15px 0;
+            text-align: center;
+        }
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-size: 1.3em;
+            margin: 60px 0;
+            padding: 40px;
+            background: rgba(22, 33, 62, 0.5);
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Movie Database</h1>
+            <p>Powered by InterSystems IRIS & TMDB API</p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Buscar películas... (ej: interstellar)" />
+            <button onclick="searchMovies()">🔍 Buscar</button>
+            <button onclick="loadAllMovies()">📋 Ver Todas</button>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalMovies">-</div>
+                <div class="stat-label">Películas</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalPosters">-</div>
+                <div class="stat-label">Posters</div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">⏳ Cargando películas...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="movies" class="movies-grid"></div>
+    </div>
+
+    <script>
+        // IMPORTANTE: Cambiar esta URL por tu servidor IRIS real
+        const API_BASE = 'http://localhost:52773/api/movies';
+        // Para desarrollo local: 'http://localhost:52773/api/movies'
+        
+        // Cargar datos al inicio
+        loadStats();
+        loadAllMovies();
+
+        async function makeRequest(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const data = await makeRequest('/stats');
+                document.getElementById('totalMovies').textContent = data.totalMovies || 0;
+                document.getElementById('totalPosters').textContent = data.totalPosters || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('totalMovies').textContent = '?';
+                document.getElementById('totalPosters').textContent = '?';
+            }
+        }
+
+        async function loadAllMovies() {
+            showLoading(true);
+            try {
+                const data = await makeRequest('/movies');
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayMovies(data.data || []);
+            } catch (error) {
+                showError('Error conectando con la API: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function searchMovies() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                loadAllMovies();
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const data = await makeRequest(`/movies/search/${encodeURIComponent(query)}`);
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayMovies(data.data || []);
+            } catch (error) {
+                showError('Error en la búsqueda: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayMovies(movies) {
+            const container = document.getElementById('movies');
+            
+            if (movies.length === 0) {
+                container.innerHTML = '<div class="empty-state">🎭 No se encontraron películas</div>';
+                return;
+            }
+
+            container.innerHTML = movies.map(movie => `
+                <div class="movie-card">
+                    ${movie.poster ? 
+                        `<img src="${movie.poster.w500}" alt="${movie.title}" class="movie-poster" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div class="movie-poster no-poster" style="display: none;">🎬 Sin Poster</div>` :
+                        `<div class="movie-poster no-poster">🎬 Sin Poster Disponible</div>`
+                    }
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        ${movie.originalTitle !== movie.title ? 
+                            `<div class="movie-details">📽️ Original: ${movie.originalTitle}</div>` : ''}
+                        ${movie.releaseDate ? 
+                            `<div class="movie-details">📅 ${movie.releaseDate}</div>` : ''}
+                        <div class="movie-details">⭐ Popularidad: ${movie.popularity}</div>
+                        ${movie.voteAverage ? 
+                            `<span class="movie-rating">${movie.voteAverage}/10</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 8000);
+        }
+
+        // Buscar al presionar Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchMovies();
+        });
+
+        // Auto-refresh stats cada 30 segundos
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>

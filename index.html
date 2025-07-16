@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Movie Database</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 12px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            min-width: 300px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .api-status {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        .status-ok {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.5);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .movie-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 20px;
+        }
+
+        .movie-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .movie-details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            input[type="text"] {
+                min-width: 250px;
+            }
+            
+            .stats {
+                gap: 20px;
+            }
+            
+            .search-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Movie Database</h1>
+            <p class="subtitle">Powered by InterSystems IRIS & TMDB API</p>
+        </header>
+
+        <div id="api-status" class="api-status">
+            <span>🔄 Verificando conexión con la API...</span>
+        </div>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Buscar películas (ej: avatar, batman...)..." />
+            <button class="btn btn-primary" onclick="searchMovies()">🔍 Buscar</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="loadAllMovies()">📋 Ver Todas</button>
+            <button class="btn btn-secondary" onclick="loadStats()">�� Estadísticas</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="movieCount">?</div>
+                <div class="stat-label">Películas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="posterCount">?</div>
+                <div class="stat-label">Posters</div>
+            </div>
+        </div>
+
+        <div id="messages"></div>
+        <div id="movies" class="movies-grid"></div>
+    </div>
+
+    <script>
+        // URLs correctas basadas en los tests
+        const API_BASE = 'http://localhost:52773/api/movies';
+        
+        // Verificar estado de la API al cargar
+        checkApiStatus();
+        loadStats();
+
+        async function makeRequest(url) {
+            try {
+                console.log('Fetching:', url);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function checkApiStatus() {
+            const statusDiv = document.getElementById('api-status');
+            try {
+                const data = await makeRequest(`${API_BASE}/test`);
+                statusDiv.className = 'api-status status-ok';
+                statusDiv.innerHTML = `✅ API conectada correctamente - ${data.message}`;
+            } catch (error) {
+                statusDiv.className = 'api-status status-error';
+                statusDiv.innerHTML = `❌ Error de conexión: ${error.message}`;
+                showError('No se puede conectar con la API. Verifica que el servidor IRIS esté funcionando.');
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const data = await makeRequest(`${API_BASE}/stats`);
+                document.getElementById('movieCount').textContent = data.totalMovies || 0;
+                document.getElementById('posterCount').textContent = data.totalPosters || 0;
+                clearMessages();
+            } catch (error) {
+                showError('Error cargando estadísticas: ' + error.message);
+            }
+        }
+
+        async function loadAllMovies() {
+            clearMessages();
+            showLoading('Cargando todas las películas...');
+
+            try {
+                // Usar la ruta correcta con /movies duplicado
+                const data = await makeRequest(`${API_BASE}/movies?limit=20`);
+                displayMovies(data.data || []);
+                clearMessages();
+                showSuccess(`Se cargaron ${data.total || 0} películas exitosamente`);
+            } catch (error) {
+                showError('Error cargando películas: ' + error.message);
+            }
+        }
+
+        async function searchMovies() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            
+            if (!searchTerm) {
+                showError('Por favor ingresa un término de búsqueda');
+                return;
+            }
+
+            clearMessages();
+            showLoading(`Buscando "${searchTerm}"...`);
+
+            try {
+                // Usar la ruta correcta de búsqueda
+                const data = await makeRequest(`${API_BASE}/movies/search/${encodeURIComponent(searchTerm)}`);
+                displayMovies(data.data || []);
+                clearMessages();
+                showSuccess(`Se encontraron ${data.count || 0} películas con "${searchTerm}"`);
+            } catch (error) {
+                showError('Error en la búsqueda: ' + error.message);
+            }
+        }
+
+        function displayMovies(movies) {
+            const moviesContainer = document.getElementById('movies');
+            
+            if (!movies || movies.length === 0) {
+                moviesContainer.innerHTML = '<div class="loading">No se encontraron películas</div>';
+                return;
+            }
+
+            moviesContainer.innerHTML = movies.map(movie => {
+                const posterUrl = movie.poster?.w500 || movie.poster?.original || 'https://via.placeholder.com/500x750?text=Sin+Poster';
+                const releaseYear = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : 'N/A';
+                
+                return `
+                    <div class="movie-card">
+                        <img src="${posterUrl}" alt="${movie.title}" class="movie-poster" 
+                             onerror="this.src='https://via.placeholder.com/500x750?text=Sin+Poster'">
+                        <div class="movie-info">
+                            <div class="movie-title">${movie.title}</div>
+                            <div class="movie-details">
+                                <strong>Año:</strong> ${releaseYear}<br>
+                                <strong>Título Original:</strong> ${movie.originalTitle || 'N/A'}<br>
+                                <strong>Puntuación:</strong> ⭐ ${movie.voteAverage || 'N/A'}<br>
+                                ${movie.overview ? `<strong>Sinopsis:</strong> ${movie.overview.substring(0, 150)}...` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showError(message) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+        }
+
+        function showSuccess(message) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="api-status status-ok">✅ ${message}</div>`;
+        }
+
+        function showLoading(message) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="loading">🔄 ${message}</div>`;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        // Permitir búsqueda con Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchMovies();
+            }
+        });
+    </script>
+</body>
+</html>
